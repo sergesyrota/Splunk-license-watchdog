@@ -37,17 +37,17 @@ _inputList = []
 _disableThreshold = 90
 _enableThreshold = 30
 
-# Default debug level
-# 0 = Fatal errors (stderr) and action information (-q)
-# 1 = Informational messages on steps and statuses
-# 2 = Verbose output, with splunk responses (-v)
-_debugLevel = 1
-
 #
 # END CONFIGURATION
 #
 # If you change anything below, make sure you know what you're doing :)
 #
+
+# Default debug level
+# 0 = Fatal errors (stderr) and action information (-q)
+# 1 = Informational messages on steps and statuses
+# 2 = Verbose output, with splunk responses (-v)
+_debugLevel = 1
 
 licensePoolQuery = '| rest /services/licenser/pools | rename title AS Pool | search [rest /services/licenser/groups | search is_active=1 | eval stack_id=stack_ids | fields stack_id] | eval quota=if(isnull(effective_quota),quota,effective_quota) | eval "Used"=round(used_bytes/1024/1024/1024, 3) | eval "Quota"=round(quota/1024/1024/1024, 3) | fields Pool "Used" "Quota"'
 
