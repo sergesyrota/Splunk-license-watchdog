@@ -15,12 +15,12 @@ from __future__ import print_function
 # CONFIGURATION
 #
 
-# host and port for Splunk server that has license pool info
-_licensingServer = "https://splunk.example.com:8089"
-
 # Authentication information for your Splunk setup
 _splunkUser = "user"
 _splunkPass = "pass"
+
+# host and port for Splunk server that has license pool info
+_licensingServer = "https://splunk.example.com:8089"
 
 # List of inputs that can be disabled or enabled
 # You can get a list by a helpful --discover-inputs=<host> flag
@@ -135,21 +135,21 @@ def toggleInputs(enable):
         disabledFlag = True
     # Take care of all inputs, and make sure they are not in desired state before requesting a change (and also checking that inputs actually exist)
     try:
-        for inputUri in _inputList:
-            inputData = splunkRestRequest(inputUri + '?output_mode=json')
+        for inputUrl in _inputList:
+            inputData = splunkRestRequest(inputUrl + '?output_mode=json')
             if inputData['entry'][0]['content']['disabled'] == disabledFlag:
-                debugPrint("Already %s: %s" % (messageText, inputUri), 2)
+                debugPrint("Already %s: %s" % (messageText, inputUrl), 2)
             else:
                 # Changing status requires POST
-                r = splunkRestRequest(inputUri + commandSuffix, {'output_mode': 'json'})
+                r = splunkRestRequest(inputUrl + commandSuffix, {'output_mode': 'json'})
                 # Messages = possible problems. Need to verify
                 for message in r['messages']:
                     if message['type'] == 'ERROR':
                         exit("Error toggling input state: " + message['text'])
                 # Verify that status is correct now:
                 if r['entry'][0]['content']['disabled'] != disabledFlag:
-                    exit("Error toggling input: %s; Request OK, but input not %s." % (inputUri, messageText))
-                debugPrint("%s: %s" % (messageText, inputUri), 1)
+                    exit("Error toggling input: %s; Request OK, but input not %s." % (inputUrl, messageText))
+                debugPrint("%s: %s" % (messageText, inputUrl), 1)
     except IndexError as e:
         exit("ERROR wotking with Splunk input toggles; unexpected data: %s" % str(e))
     except KeyError as e:
@@ -204,20 +204,20 @@ def splunkQuery(host, query):
     payload = {'search': query, 'output_mode': 'json', 'exec_mode': 'oneshot'}
     return splunkRestRequest(host + '/servicesNS/' + _splunkUser + '/search/search/jobs/export/', payload)
 
-# Data format is always expected to be JSON, so need to make sure it's either in URI explicitly, or in post data when this function is used
-def splunkRestRequest(uri, postData=None):
+# Data format is always expected to be JSON, so need to make sure it's either in URL explicitly, or in post data when this function is used
+def splunkRestRequest(url, postData=None):
     try:
         # No post means we're making a GET request
         if postData is None:
-            r = requests.get(uri, auth=(_splunkUser, _splunkPass), verify=False)
+            r = requests.get(url, auth=(_splunkUser, _splunkPass), verify=False)
             debugPrint(r.text, 2)
             return r.json()
         else:
-            r = requests.post(uri, postData, auth=(_splunkUser, _splunkPass), verify=False)
+            r = requests.post(url, postData, auth=(_splunkUser, _splunkPass), verify=False)
             debugPrint(r.text, 2)
             return r.json()
     except requests.exceptions.RequestException as e:
-        exit("ERROR communicating with Splunk server (%s): %s", (uri, str(e)))
+        exit("ERROR communicating with Splunk server (%s): %s", (url, str(e)))
 
 def showHelp():
     print("""
@@ -225,10 +225,10 @@ USAGE: splunk-license-monitor.py [options...]
 Running without arguments would execute logic. Helper commands can help with config, but require
 authentication variables to be set in the file.
 
-  -c/--check-license <uri> Attempts to retrieve license information from provided
+  -c/--check-license <url> Attempts to retrieve license information from provided
                     Splunk node (Requires auth info) protocol://host:port resuired, e.g.:
                     https://your.server.com:8089
-  -d/--discover-inputs <uri> Discovers all inputs and current states
+  -d/--discover-inputs <url> Discovers all inputs and current states
                     from provided Splunk node (requires auth parameters to be configured)
                     protocol://host:port resuired, e.g.:
                     https://your.server.com:8089
