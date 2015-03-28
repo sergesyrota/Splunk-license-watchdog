@@ -30,8 +30,8 @@ _licensingServer = "https://splunk.example.com:8089"
 #                       'https://node2.example.com:8089/servicesNS/nobody/system/data/inputs/monitor/%24SPLUNK_HOME%252Fetc%252Fsplunk.version']
 _inputList = []
 
-# Action threshold. When current usage crosses approachingQuotaThreshold, TCP inputs will be disabled.
-# When today's usage will be under newDayThreshold - we're assuming new day has started, and inputs will be enabled
+# Action threshold. When current usage crosses _disableThreshold, listed inputs will be disabled.
+# When today's usage will be under _enableThreshold - we're assuming new day has started, and inputs will be enabled
 # Consider that 1% is ~15 minutes. Set threshold and schedules accordingly.
 # Also make sure that script runs before the time you might run out of quota
 _disableThreshold = 90
